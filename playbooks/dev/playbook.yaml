@@ -1,0 +1,45 @@
+- name: Prepare Environment 
+  hosts: localhost
+  tasks:
+    - name: Install base
+      ansible.builtin.apt:
+        update_cache: true
+        pkg:
+          - fish
+          - git
+          - gnupg
+          - zip
+          - unzip
+          - python3
+          - python3-pip
+          - python3-venv
+      become: true
+    - name: Create projects dir
+      ansible.builtin.file:
+        group: ben
+        owner: ben
+        mode: '0750'
+        path: /home/ben/projects
+        state: directory
+    - name: Clone dotfiles
+      ansible.builtin.git:
+        key_file: /home/ben/.ssh/id_rsa
+        repo: git@github.com:benmcmahon100/dotfiles.git
+        dest: /home/ben/projects/dotfiles
+    - name: Create symlinks
+      block:
+        - name: vim config
+          ansible.builtin.file:
+            src: /home/ben/projects/dotfiles/.vimrc
+            dest: /home/ben/.vimrc
+            owner: ben
+            group: ben
+            state: link
+        - name: fish config
+          ansible.builtin.file:
+            src: /home/ben/projects/dotfiles/config.fish
+            dest: /home/ben/.config/fish/config.fish
+            owner: ben
+            group: ben
+            state: link
+
